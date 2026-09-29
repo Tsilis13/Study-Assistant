@@ -1,0 +1,13 @@
+fastapi>=0.142
+uvicorn[standard]>=0.54
+sqlalchemy>=2.1
+pydantic>=2.13
+python-multipart>=0.0.32
+bcrypt>=5.0
+PyJWT>=2.15
+python-dotenv>=1.2
+slowapi>=0.1.10
+pypdf>=6.19
+chromadb>=1.5
+openai>=3.22
+sentence-transformers>=3.0
