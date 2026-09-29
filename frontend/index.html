@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Assistant</title>
+<style>
+:root{--paper:#f3f5f8;--card:#fff;--ink:#16202e;--muted:#586477;--line:#d5dce6;--accent:#2b4c7e;--hl:#ffe45c;--hl-ink:#352c00;--ok:#1d7a4a;--bad:#b3261e;
+--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+@media (prefers-color-scheme:dark){:root{--paper:#11161e;--card:#1a212c;--ink:#e8edf3;--muted:#9aa6b8;--line:#2c3644;--accent:#9dbbee;--hl:#f2d43d;--hl-ink:#231d00;--ok:#5cc58a;--bad:#ff8f86}}
+*{box-sizing:border-box}
+html{background:var(--paper);color:var(--ink);font:16px/1.5 var(--sans)}
+body{margin:0;min-height:100vh}
+[hidden]{display:none!important}
+h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.2;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{width:100%;padding:.55rem .7rem;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+textarea{resize:vertical}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button{cursor:pointer}
+label{display:grid;gap:.25rem;font-weight:600;font-size:.92rem}
+.primary{background:var(--accent);color:var(--card);border:0;border-radius:6px;padding:.6rem 1.1rem;font-weight:600}
+.primary:disabled{opacity:.6;cursor:progress}
+.link{background:none;border:0;color:var(--accent);text-decoration:underline;padding:.3rem 0;text-align:left}
+.error{color:var(--bad);min-height:1.3em;margin:0}
+.auth{min-height:100vh;display:grid;place-items:center;padding:1rem}
+.auth-card{width:min(24rem,100%);display:grid;gap:.9rem;background:var(--card);padding:2rem;border-top:6px solid var(--hl)}
+.auth-card h1{font-size:2rem}
+.lede{margin:0;color:var(--muted)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.7rem 1.2rem;border-bottom:1px solid var(--line);background:var(--card)}
+.top h1{font-size:1.25rem}
+.who{display:flex;gap:1rem;align-items:center;color:var(--muted)}
+.layout{display:grid;grid-template-columns:19rem minmax(0,1fr);min-height:calc(100vh - 3.4rem)}
+.side{padding:1.2rem;border-right:1px solid var(--line);display:grid;gap:1rem;align-content:start}
+.side h2{font-size:1.15rem}
+.drop{width:100%;text-align:left;border:2px dashed var(--line);background:none;border-radius:8px;padding:.8rem}
+.drop.over{border-color:var(--accent);background:var(--card)}
+.drop strong{display:block}
+.drop span,.doc-meta,.hint{color:var(--muted);font-size:.85rem}
+details.note-box summary{cursor:pointer;font-weight:600}
+#note-form{display:grid;gap:.7rem;margin-top:.7rem}
+.docs{list-style:none;margin:0;padding:0;display:grid;gap:.4rem}
+.docs li{display:flex;justify-content:space-between;gap:.6rem;padding:.4rem .6rem;border-left:3px solid var(--line)}
+.doc-title{font-weight:600;overflow-wrap:anywhere}
+.warn{color:var(--bad)}
+.del{background:none;border:0;color:var(--muted);font-size:.85rem;text-decoration:underline;align-self:start}
+.main{padding:1.5rem}
+.panel-wrap{max-width:46rem}
+.tabs{display:flex;gap:1.4rem;border-bottom:1px solid var(--line);margin-bottom:1.2rem}
+.tab{background:none;border:0;padding:.5rem 0;color:var(--muted);font-weight:600;border-bottom:4px solid transparent;margin-bottom:-1px}
+.tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--hl)}
+.form{display:grid;gap:.8rem;margin-bottom:1rem}
+.inline{display:flex;gap:.8rem;flex-wrap:wrap;align-items:end}
+.inline label{flex:1 1 12rem}
+.answer{font-family:var(--serif);font-size:1.12rem;line-height:1.65;white-space:pre-wrap;max-width:65ch;padding:.6rem 0 1rem}
+.cite{background:var(--hl);color:var(--hl-ink);border:0;border-radius:4px;padding:0 .4rem;margin:0 .1rem;font:600 .8rem var(--sans)}
+.note{background:var(--card);border-left:3px solid var(--hl);padding:.6rem .8rem;margin:0 0 1rem}
+.out h3{margin:1rem 0 .4rem;font-size:1.1rem}
+details.source{border-left:3px solid var(--line);padding:.4rem .8rem;margin:.5rem 0;transition:background 1s}
+details.source.flash{transition:none;background:var(--hl);color:var(--hl-ink)}
+details.source summary{cursor:pointer;font-weight:600}
+details.source p{font-family:var(--serif);white-space:pre-wrap;margin:.5rem 0 0}
+fieldset{border:0;border-left:3px solid var(--line);margin:0 0 1.2rem;padding:.2rem 0 .2rem 1rem}
+legend{font-family:var(--serif);font-size:1.1rem;font-weight:600;padding:0;margin-bottom:.5rem}
+.opt{display:flex;gap:.6rem;align-items:flex-start;font-weight:400;padding:.3rem .5rem;border-radius:6px}
+.opt input{width:auto;margin-top:.3rem}
+.opt.right{background:color-mix(in srgb,var(--ok) 20%,transparent)}
+.opt.wrong{background:color-mix(in srgb,var(--bad) 20%,transparent)}
+.feedback{margin:.4rem 0 0;color:var(--muted)}
+.score{font-family:var(--serif);font-size:1.2rem;margin:.8rem 0 0}
+.summary{font-family:var(--serif);font-size:1.08rem;line-height:1.65;white-space:pre-wrap;max-width:65ch}
+.empty{color:var(--muted)}
+.toast{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:.6rem 1rem;border-radius:6px;max-width:90vw}
+@media (max-width:800px){.layout{grid-template-columns:1fr}.side{border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+
+<div id="auth-screen" class="auth" hidden>
+  <form id="auth-form" class="auth-card">
+    <h1>Study Assistant</h1>
+    <p class="lede">Ask questions about your own notes and PDFs. Every answer shows the passage it came from.</p>
+    <label>Username <input id="a-user" autocomplete="username" required minlength="3" maxlength="20"></label>
+    <label>Password <input id="a-pass" type="password" autocomplete="current-password" required minlength="8" maxlength="128"></label>
+    <p id="auth-error" class="error" role="alert"></p>
+    <button class="primary" id="auth-submit">Log in</button>
+    <button type="button" class="link" id="auth-switch">New here? Create an account</button>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <header class="top">
+    <h1>Study Assistant</h1>
+    <div class="who"><span id="who"></span><button class="link" id="logout" type="button">Log out</button></div>
+  </header>
+  <div class="layout">
+    <aside class="side">
+      <h2>Your material</h2>
+      <button class="drop" id="drop" type="button"><strong>Add a file</strong><span>PDF, TXT or MD, up to 10 MB. Click, or drop it here.</span></button>
+      <input type="file" id="file" accept=".pdf,.txt,.md" hidden>
+      <details class="note-box">
+        <summary>Write a note instead</summary>
+        <form id="note-form">
+          <label>Title <input id="n-title" required maxlength="200"></label>
+          <label>Text <textarea id="n-text" rows="6" required maxlength="200000"></textarea></label>
+          <button class="primary">Save note</button>
+        </form>
+      </details>
+      <ul class="docs" id="docs"></ul>
+    </aside>
+
+    <main class="main"><div class="panel-wrap">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-tab="ask" aria-selected="true">Ask</button>
+        <button class="tab" role="tab" data-tab="quiz" aria-selected="false">Quiz</button>
+        <button class="tab" role="tab" data-tab="summary" aria-selected="false">Summary</button>
+      </div>
+
+      <section id="tab-ask" role="tabpanel">
+        <form id="ask-form" class="form">
+          <label>Search in <select id="ask-scope"></select></label>
+          <label>Your question <textarea id="ask-q" rows="2" required minlength="2" maxlength="500" placeholder="e.g. What is the difference between a page and a frame?"></textarea></label>
+          <div><button class="primary" id="ask-btn">Ask</button></div>
+        </form>
+        <p class="error" id="ask-error" role="alert"></p>
+        <div class="out" id="ask-out"></div>
+      </section>
+
+      <section id="tab-quiz" role="tabpanel" hidden>
+        <form id="quiz-form" class="form inline">
+          <label>Material <select id="quiz-doc" required></select></label>
+          <label>Questions <select id="quiz-n"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></label>
+          <button class="primary" id="quiz-btn">Make quiz</button>
+        </form>
+        <p class="error" id="quiz-error" role="alert"></p>
+        <div class="out" id="quiz-out"></div>
+      </section>
+
+      <section id="tab-summary" role="tabpanel" hidden>
+        <form id="sum-form" class="form inline">
+          <label>Material <select id="sum-doc" required></select></label>
+          <button class="primary" id="sum-btn">Summarize</button>
+        </form>
+        <p class="error" id="sum-error" role="alert"></p>
+        <div class="out" id="sum-out"></div>
+      </section>
+    </div></main>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+"use strict";
+const $ = (selector) => document.querySelector(selector);
+
+// Build elements without innerHTML: text is always inserted as text, so nothing a user
+// uploads or writes can run as code.
+function h(tag, attrs = {}, ...kids) {
+  const el = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key === "class") el.className = value;
+    else if (key.startsWith("on")) el.addEventListener(key.slice(2), value);
+    else if (value === true) el.setAttribute(key, "");
+    else if (value !== false && value != null) el.setAttribute(key, value);
+  }
+  for (const kid of kids.flat()) if (kid != null && kid !== false) el.append(kid.nodeType ? kid : document.createTextNode(kid));
+  return el;
+}
+
+const store = {
+  get() { try { return localStorage.getItem("study_token"); } catch { return null; } },
+  set(value) { try { value ? localStorage.setItem("study_token", value) : localStorage.removeItem("study_token"); } catch {} },
+};
+let token = store.get();
+let docs = [];
+let registering = false;
+
+async function api(path, { method = "GET", json, form, auth = true } = {}) {
+  const headers = {};
+  if (auth && token) headers.Authorization = "Bearer " + token;
+  let body = form;
+  if (json) { headers["Content-Type"] = "application/json"; body = JSON.stringify(json); }
+  let res;
+  try { res = await fetch(path, { method, headers, body }); }
+  catch { throw new Error("Can't reach the server. Is it running?"); }
+  if (res.status === 401 && auth) { logout(); throw new Error("Your session ended. Log in again."); }
+  if (res.status === 204) return null;
+  let data = null;
+  try { data = await res.json(); } catch {}
+  if (!res.ok) {
+    let message = data && data.detail;
+    if (Array.isArray(message)) message = (message[0] && message[0].msg || "").replace(/^Value error, /, "");
+    if (res.status === 429) message = "Too many requests. Wait a minute and try again.";
+    throw new Error(message || "Something went wrong (" + res.status + ").");
+  }
+  return data;
+}
+
+let toastTimer;
+function toast(message) {
+  const el = $("#toast");
+  el.textContent = message; el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; }, 3500);
+}
+
+// Runs an action while its button is disabled; shows an error under the form if it fails.
+async function run(button, label, errorEl, action) {
+  const original = button.textContent;
+  button.disabled = true; button.textContent = label; errorEl.textContent = "";
+  try { await action(); }
+  catch (error) { errorEl.textContent = error.message; }
+  finally { button.disabled = false; button.textContent = original; }
+}
+
+// ---- Login and register
+function showAuth() { $("#app").hidden = true; $("#auth-screen").hidden = false; }
+function showApp(username) { $("#auth-screen").hidden = true; $("#app").hidden = false; $("#who").textContent = username; refreshDocs(); }
+function logout() { token = null; store.set(null); docs = []; showAuth(); }
+
+$("#auth-switch").addEventListener("click", () => {
+  registering = !registering;
+  $("#auth-submit").textContent = registering ? "Create account" : "Log in";
+  $("#auth-switch").textContent = registering ? "Already have an account? Log in" : "New here? Create an account";
+  $("#a-pass").autocomplete = registering ? "new-password" : "current-password";
+  $("#auth-error").textContent = "";
+});
+
+$("#auth-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const username = $("#a-user").value.trim(), password = $("#a-pass").value;
+  run($("#auth-submit"), registering ? "Creating…" : "Logging in…", $("#auth-error"), async () => {
+    if (registering) await api("/auth/register", { method: "POST", json: { username, password }, auth: false });
+    const result = await api("/auth/login", { method: "POST", form: new URLSearchParams({ username, password }), auth: false });
+    token = result.access_token; store.set(token);
+    $("#a-pass").value = "";
+    showApp(username.toLowerCase());
+  });
+});
+$("#logout").addEventListener("click", logout);
+
+// ---- Documents
+async function refreshDocs() {
+  try { docs = await api("/documents"); } catch (error) { toast(error.message); return; }
+  const list = $("#docs");
+  list.replaceChildren(...(docs.length ? docs.map((doc) => h("li", {},
+    h("div", {},
+      h("div", { class: "doc-title" }, doc.title),
+      h("div", { class: "doc-meta" }, doc.kind.toUpperCase() === "TEXT" ? "Text file" : doc.kind === "pdf" ? "PDF" : "Note", ", ", doc.word_count.toLocaleString(), " words"),
+      doc.indexed ? null : h("div", { class: "doc-meta warn" }, "Not searchable yet. Run reindex.py.")),
+    h("button", { class: "del", type: "button", "aria-label": "Delete " + doc.title, onclick: () => removeDoc(doc) }, "Delete"),
+  )) : [h("li", { class: "empty" }, "Nothing here yet. Add a PDF, a text file or a note to get started.")]));
+
+  const options = docs.map((doc) => h("option", { value: doc.id }, doc.title));
+  $("#ask-scope").replaceChildren(h("option", { value: "" }, "All my material"), ...options);
+  $("#quiz-doc").replaceChildren(...docs.map((doc) => h("option", { value: doc.id }, doc.title)));
+  $("#sum-doc").replaceChildren(...docs.map((doc) => h("option", { value: doc.id }, doc.title)));
+}
+
+async function removeDoc(doc) {
+  if (!confirm('Delete "' + doc.title + '"? Its text and search data will be removed.')) return;
+  try { await api("/documents/" + doc.id, { method: "DELETE" }); toast("Deleted " + doc.title); }
+  catch (error) { toast(error.message); }
+  refreshDocs();
+}
+
+async function upload(file) {
+  if (!file) return;
+  const form = new FormData(); form.append("file", file);
+  toast("Uploading " + file.name + "…");
+  try {
+    const doc = await api("/documents/upload", { method: "POST", form });
+    toast(doc.indexed ? "Added " + doc.title : "Saved " + doc.title + ", but it can't be searched yet.");
+  } catch (error) { toast(error.message); }
+  $("#file").value = "";
+  refreshDocs();
+}
+const drop = $("#drop");
+drop.addEventListener("click", () => $("#file").click());
+$("#file").addEventListener("change", (event) => upload(event.target.files[0]));
+drop.addEventListener("dragover", (event) => { event.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+drop.addEventListener("drop", (event) => { event.preventDefault(); drop.classList.remove("over"); upload(event.dataTransfer.files[0]); });
+
+$("#note-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  try {
+    const doc = await api("/documents/note", { method: "POST", json: { title: $("#n-title").value, text: $("#n-text").value } });
+    toast("Added " + doc.title);
+    $("#note-form").reset();
+  } catch (error) { toast(error.message); }
+  refreshDocs();
+});
+
+// ---- Tabs
+for (const tab of document.querySelectorAll(".tab")) {
+  tab.addEventListener("click", () => {
+    for (const other of document.querySelectorAll(".tab")) {
+      const active = other === tab;
+      other.setAttribute("aria-selected", active);
+      $("#tab-" + other.dataset.tab).hidden = !active;
+    }
+  });
+}
+
+// ---- Ask
+function answerNodes(text, sourceCount) {
+  return text.split(/(\[\d+\])/).map((part) => {
+    const match = part.match(/^\[(\d+)\]$/);
+    const number = match ? Number(match[1]) : 0;
+    if (!number || number > sourceCount) return part;
+    return h("button", { class: "cite", type: "button", "aria-label": "Show source " + number, onclick: () => focusSource(number) }, number);
+  });
+}
+
+function focusSource(number) {
+  const el = document.getElementById("src-" + number);
+  if (!el) return;
+  el.open = true;
+  el.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  el.classList.add("flash");
+  setTimeout(() => el.classList.remove("flash"), 1500);
+}
+
+function renderAsk(data) {
+  const out = $("#ask-out");
+  out.replaceChildren();
+  if (data.note) out.append(h("p", { class: "note" }, data.note));
+  if (data.answer !== null) out.append(h("div", { class: "answer" }, answerNodes(data.answer, data.sources.length)));
+  if (data.sources.length) {
+    out.append(h("h3", {}, "From your material"));
+    data.sources.forEach((source, i) => out.append(h("details", { class: "source", id: "src-" + (i + 1) },
+      h("summary", { title: "distance " + source.distance }, (i + 1) + ". " + source.title + (source.page ? ", page " + source.page : "")),
+      h("p", {}, source.text))));
+  }
+}
+
+$("#ask-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const scope = $("#ask-scope").value;
+  const json = { question: $("#ask-q").value };
+  if (scope) json.document_id = Number(scope);
+  run($("#ask-btn"), "Thinking…", $("#ask-error"), async () => renderAsk(await api("/ask", { method: "POST", json })));
+});
+
+// ---- Quiz
+function renderQuiz(data) {
+  const out = $("#quiz-out");
+  const items = data.questions.map((q, i) => {
+    const name = "q" + i;
+    const options = q.options.map((text, j) => h("label", { class: "opt" }, h("input", { type: "radio", name, value: j }), h("span", {}, text)));
+    const feedback = h("p", { class: "feedback", hidden: true });
+    return { q, options, feedback, box: h("fieldset", {}, h("legend", {}, (i + 1) + ". " + q.question), options, feedback) };
+  });
+  const score = h("p", { class: "score", role: "status" });
+  const check = h("button", { class: "primary", type: "button" }, "Check answers");
+  check.addEventListener("click", () => {
+    let right = 0;
+    for (const item of items) {
+      const chosen = item.options.findIndex((label) => label.querySelector("input").checked);
+      item.options.forEach((label, j) => {
+        label.querySelector("input").disabled = true;
+        if (j === item.q.correct_index) label.classList.add("right");
+        else if (j === chosen) label.classList.add("wrong");
+      });
+      if (chosen === item.q.correct_index) right++;
+      item.feedback.textContent = (chosen === -1 ? "No answer. " : chosen === item.q.correct_index ? "Correct. " : "Not quite. ") + item.q.explanation;
+      item.feedback.hidden = false;
+    }
+    score.textContent = "You got " + right + " of " + items.length + " right.";
+    check.disabled = true;
+  });
+  out.replaceChildren(h("h3", {}, data.title), ...items.map((item) => item.box), check, score);
+}
+
+$("#quiz-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const json = { document_id: Number($("#quiz-doc").value), num_questions: Number($("#quiz-n").value) };
+  run($("#quiz-btn"), "Writing questions…", $("#quiz-error"), async () => renderQuiz(await api("/quiz", { method: "POST", json })));
+});
+
+// ---- Summary
+function renderSummary(data) {
+  const parts = [h("h3", {}, data.title), h("div", { class: "summary" }, data.summary)];
+  if (data.sections_used < data.sections_total)
+    parts.push(h("p", { class: "hint" }, "Based on " + data.sections_used + " of " + data.sections_total + " sections, spread across the document."));
+  $("#sum-out").replaceChildren(...parts);
+}
+
+$("#sum-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const json = { document_id: Number($("#sum-doc").value) };
+  run($("#sum-btn"), "Summarizing…", $("#sum-error"), async () => renderSummary(await api("/summarize", { method: "POST", json })));
+});
+
+// ---- Start
+(async function start() {
+  if (!token) return showAuth();
+  try { showApp((await api("/auth/me")).username); } catch { showAuth(); }
+})();
+</script>
+</body>
+</html>

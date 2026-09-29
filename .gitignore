@@ -1,0 +1,7 @@
+.env
+app.db
+chroma_db/
+venv/
+__pycache__/
+.pytest_cache/
+*.pyc
