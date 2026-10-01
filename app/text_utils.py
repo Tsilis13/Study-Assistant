@@ -1,5 +1,6 @@
-"""Reading files and cutting text into chunks. No database and no vector store in here."""
+"""Reading files and cutting text into chunks. """
 import io
+import random
 
 from pypdf import PdfReader
 
@@ -61,5 +62,12 @@ def sample_chunks(chunks: list[dict], k: int) -> list[dict]:
     """At most k chunks spread evenly over the whole material (for quizzes and summaries)."""
     if len(chunks) <= k or k < 2:
         return chunks[:k]
-    positions = sorted({round(i * (len(chunks) - 1) / (k - 1)) for i in range(k)})
-    return [chunks[p] for p in positions]
+    
+    n = len(chunks)  # Select one chunk from each of k evenly spaced sections of the document.
+    sampled = []
+    for i in range(k):
+        start = round(i * n / k)
+        end = round((i + 1) * n / k)
+        position = random.randrange(start, end)
+        sampled.append(chunks[position])
+    return sampled

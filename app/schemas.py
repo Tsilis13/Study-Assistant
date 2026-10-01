@@ -16,7 +16,6 @@ class UserCreate(BaseModel):
 
 
 class UserResponse(BaseModel):
-    """Note what is NOT here: password_hash never leaves the server."""
     model_config = ConfigDict(from_attributes=True)
 
     id: int
