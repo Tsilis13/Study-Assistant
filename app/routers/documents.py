@@ -31,7 +31,7 @@ def get_owned_document_or_404(db: Session, doc_id: int, user: models.User) -> mo
 
 
 def save_document(db: Session, user: models.User, title: str, content: str, kind: str) -> models.Document:
-    """Save to SQLite FIRST (the truth), then build the vectors. A vector failure loses nothing."""
+    """Save to SQLite FIRST, then build the vectors. A vector failure loses nothing."""
     doc = models.Document(
         user_id=user.id,
         title=title,

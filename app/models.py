@@ -19,7 +19,7 @@ class User(Base):
 class Document(Base):
     """
     One piece of study material: an uploaded PDF/text file or a pasted note.
-    The full text is stored HERE (SQLite is the source of truth), so the vector index
+    The full text is stored HERE, so the vector index
     can always be rebuilt from it. In a PDF, pages are separated by a form-feed character.
     """
     __tablename__ = "documents"

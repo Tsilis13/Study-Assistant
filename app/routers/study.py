@@ -13,7 +13,7 @@ router = APIRouter(tags=["study"])
 # as "not relevant". A first guess; tune it by watching the `distance` values in real answers.
 MAX_DISTANCE = 0.8
 
-QUIZ_SECTIONS = 8       # how many parts of the document the quiz is written from
+QUIZ_SECTIONS = 6       # how many parts of the document the quiz is written from
 SUMMARY_SECTIONS = 12
 
 NOTHING_FOUND = "I couldn't find anything relevant in your documents."
@@ -37,12 +37,12 @@ def ask(
     if data.document_id is not None:
         get_owned_document_or_404(db, data.document_id, current_user)   # 404 for other people's documents
 
-    # 1. Retrieval: the closest passages of THIS user, minus the ones that are too far away.
+    # Retrieval: the closest passages of THIS user, minus the ones that are too far away.
     hits = rag.search(current_user.id, data.question, top_k=data.top_k, doc_id=data.document_id)
     hits = [hit for hit in hits if hit["distance"] <= MAX_DISTANCE]
 
-    # 2. The titles come from SQLite (the truth). A hit whose document no longer exists there
-    #    is a stale vector and must not be returned.
+    # The titles come from SQLite. A hit whose document no longer exists there
+    # is a stale vector and must not be returned.
     titles = dict(
         db.query(models.Document.id, models.Document.title)
         .filter(
@@ -63,11 +63,11 @@ def ask(
         if hit["doc_id"] in titles
     ]
 
-    # 3. Nothing relevant: say so without calling the model (saves cost, prevents invented answers).
+    # Nothing relevant: say so without calling the model (saves cost, prevents invented answers).
     if not sources:
         return {"question": data.question, "answer": NOTHING_FOUND, "sources": []}
 
-    # 4. Generation. If the model is down, the student still gets the passages.
+    # Generation. If the model is down, the student still gets the passages.
     try:
         answer, note = llm.answer_question(data.question, sources), None
     except llm.LLMUnavailable:
