@@ -9,6 +9,7 @@ A **Retrieval-Augmented Generation (RAG)** app for studying. Upload study materi
 ![SQLite](https://img.shields.io/badge/SQLite-003B57)
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-vector%20search-orange)
 ![RAG](https://img.shields.io/badge/RAG-retrieval--augmented%20generation-purple)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 
 <!-- Add a screenshot or short GIF here, e.g. ![Demo](docs/demo.gif) -->
 
@@ -59,6 +60,7 @@ The language model only **writes**. Which passages it sees is decided by vector 
 | Rate limiting | slowapi (per account, or per IP when logged out) |
 | PDF reading | pypdf |
 | Frontend | Single-file `index.html`, no build step |
+| Deployment | Docker & Docker Compose |
 
 ## Project structure
 
@@ -88,7 +90,26 @@ study-assistant/
 
 ## Getting started
 
+You can run this project using Docker (recommended) or locally via Python.
+
+Generate a secret for signing tokens and paste it into `.env`:
+
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+### Option A: Run with Docker (Recommended)
+
+```bash
+docker-compose up --build
+```
+
+Open <http://127.0.0.1:8000>.
+
+### Option B: Run locally with Python
+
 **Requirements:** Python 3.10 or newer and a free [Groq API key](https://console.groq.com/).
+
+
 
 ```bash
 python -m venv venv
@@ -100,11 +121,6 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Generate a secret for signing tokens and paste it into `.env`:
-
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
 
 Run the app from the project root (the folder that contains `app/`):
 
@@ -157,9 +173,14 @@ All endpoints except register, login and health require `Authorization: Bearer <
 
 If documents are marked `indexed = false`, the vector index was lost, or you changed the embedding model, rebuild it from SQLite:
 
+**If running locally:**
 ```bash
 python reindex.py
 ```
+
+**If running via Docker:**
+```bash
+docker compose exec study-assistant-app python reindex.py
 
 Stop the server first, so no upload happens while the index is being rebuilt.
 
