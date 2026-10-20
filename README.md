@@ -181,7 +181,7 @@ python reindex.py
 **If running via Docker:**
 ```bash
 docker compose exec study-assistant-app python reindex.py
-
+```
 Stop the server first, so no upload happens while the index is being rebuilt.
 
 
