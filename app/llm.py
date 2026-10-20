@@ -31,7 +31,7 @@ class LLMUnavailable(Exception):
 
 
 def _complete(system: str, user: str, max_tokens: int = 900) -> str:
-    """One call to the model. The single place that talks to Groq (tests replace this function)."""
+    """One call to the model. The single place that talks to Groq."""
     if client is None:
         raise LLMUnavailable("GROQ_API_KEY is not set.")
     try:
